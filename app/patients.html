@@ -1,0 +1,74 @@
+<div class="row">
+      <div class="col-sm-8 col-md-9 col-lg-10 map-col">
+        <esri-map [itemId]="itemId" [options]="mapOptions" (mapLoaded)="onMapLoad($event)">
+          <esri-search [options]="searchOptions" (onChange)="onSearchChanged($event)"></esri-search>
+        </esri-map>
+      </div>
+      <div class="col-sm-4 col-md-3 col-lg-2">
+        <h3>{{title}}</h3>
+      </div>
+    </div>
+    <div bsModal #lgModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" (click)="lgModal.hide()" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">Donors Info</h4>
+          </div>
+          <div class="modal-body">
+            <form role="form" (ngSubmit)="onSubmit()" [formGroup]="donorForm">
+              <div class="row">
+                <div class="form-group col-lg-6 col-lg-push-3">
+                      <label for="firstName">First Name</label>
+                      <input name="firstName" type="text" class="form-control" formControlName="firstName"/>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-lg-6 col-lg-push-3">
+                      <label for="lastName">Last Name</label>
+                      <input type="text" name="lastName" class="form-control" formControlName="lastName"/>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-lg-6 col-lg-push-3">
+                      <label for="contact">Contact Number</label>
+                      <input type="text" name="contact" class="form-control" formControlName="contact"/>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-lg-6 col-lg-push-3">
+                      <label for="email">Email Address</label>
+                      <input type="text" name="email" class="form-control" formControlName="email"/>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-lg-6 col-lg-push-3">
+                      <label for="bloodGroup">Blood Group</label>
+                      <input type="text" name="bloodGroup" class="form-control" formControlName="bloodGroup"/>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-3 col-lg-push-5">
+                  <button type="reset" class="btn btn-danger">Reset</button>
+                  <button type="submit" class="btn btn-success">Submit</button>
+                </div>  
+              </div>          
+            </form>  
+          </div>
+        </div>
+      </div>
+    </div>
+    <div bsModal #confirmModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myConfirmModalLabel" aria-hidden="true">
+     <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" (click)="confirmModal.hide()" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">Thanks donor, Your infos are saved successfully</h4>
+          </div>
+        </div>  
+      </div>
+    </div>
