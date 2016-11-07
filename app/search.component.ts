@@ -1,5 +1,6 @@
 import { Component, ElementRef,Output , EventEmitter} from '@angular/core';
 import { MapService } from './map.service';
+import Search = require('esri/dijit/Search');
 
 @Component({
   selector: 'esri-search',
@@ -23,6 +24,11 @@ export class SearchComponent {
       that.onChange.next(result);
     });
   }
+  
+   // create a search dijit at the dom node
+  createSearch(options: Object, domNodeOrId: any) {
+    return new Search(options, domNodeOrId);
+  };
 
   // start up once the DOM is ready
   ngAfterViewInit() {

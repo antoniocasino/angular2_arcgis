@@ -2,16 +2,19 @@ import { Component, ViewChild } from '@angular/core';
 import { FormGroup, FormControl,Validators, FormBuilder ,Control} from '@angular/forms';
 import { MapComponent } from './map.component';
 import { SearchComponent } from './search.component';
-import { LegendComponent } from './legend.component';
-import { BasemapSelect } from './basemapselect.component';
-import { LayerComponent } from './layer.component';
+
 import { ModalDirective } from "ng2-bootstrap/components/modal/modal.component";
 import { DonorService }    from './donor.service';
+import {Donor} from './donor';
+
 import SimpleMarkerSymbol = require('esri/symbols/SimpleMarkerSymbol');
+import PictureMarkerSymbol = require('esri/symbols/PictureMarkerSymbol');
+
 import InfoTemplate = require('esri/InfoTemplate');
 import Graphic = require('esri/graphic');
 import GraphicsLayer = require('esri/layers/GraphicsLayer')
 import Point = require('esri/geometry/Point');
+import webMercatorUtils = require('esri/geometry/webMercatorUtils');
 import 'rxjs/add/operator/map';
 
 @Component({
@@ -23,15 +26,19 @@ export class AppComponent {
   // references to child components
   @ViewChild(MapComponent) mapComponent:MapComponent;
   @ViewChild(SearchComponent) searchComponent:SearchComponent;
-  @ViewChild(LegendComponent) legendComponent:LegendComponent;
-  @ViewChild(BasemapSelect) basemapSelect:BasemapSelect;
-  @ViewChild(LayerComponent) LayerComponent:LayerComponent;
 
-  @ViewChild('lgModal') public childModal:ModalDirective;
+  @ViewChild('lgModal') public lgModal:ModalDirective;
   @ViewChild('confirmModal') public confirmModal:ModalDirective;
+  @ViewChild('patientModal') public patientModal:ModalDirective;
 
-  title = 'Donors page';
+  donorForPatient:Donor;
+  donors:Donor[];
+  
+  title = `Click on the map and add a donor location.
+           Refresh the page to see all locations.
+           Click inside the circle and you will see donor's info`;
   map:any;
+  
   // map config
   itemId = 'ca61731df68a49bc9f0d6d78f6f73c7b';
   public mapOptions = {
@@ -39,6 +46,7 @@ export class AppComponent {
     center: [12.492373, 41.890251], // lon, lat
     zoom: 7
   };
+  
   donorForm:FormGroup;
   geometry:any;
   // search config
@@ -69,55 +77,67 @@ export class AppComponent {
   // once the map loads
   onMapLoad(response) {
     this.map = response.map;
+    this.map.infoWindow.hide();
+    this.map.infoWindow.show(this.mapOptions.center[0],this.mapOptions.center[1]);
+     
     // bind the search dijit to the map
+    this.searchComponent.setMap(response.map);
     this.loadDonors();
-    this.searchComponent.setMap(this.map);
-  }
-  
-  onSearchChanged(response){
-    this.geometry = response.feature.geometry;
-    this.mapOptions.center = [this.geometry.x, this.geometry.y];
-    this.mapComponent.loadMap();
-    const modal = this.childModal;
-    this.map.on("click", (event) => {
-      modal.show();
+   
+    response.map.on("click", (event) => {
+      this.donorForPatient = null;
+      var mp = webMercatorUtils.webMercatorToGeographic(event.mapPoint);
+      this.geometry = mp;
+      var distance = 0;
+      var point:Point=null;
+      for(let donor of this.donors){
+        var p = new Point(donor.latitude, donor.longitude);
+        var d = esri.geometry.getLength(p, mp);
+        if(distance == 0){
+          distance = d;
+        }
+        if(d<0.5 && d <= distance){
+          point = p;
+          this.donorForPatient = donor;
+          distance = d;
+        }
+      }
+      if(distance<0.5){
+        this.patientModal.show();
+      }
+      else{
+        this.lgModal.show();
+      }
     }); 
   }
   
+  onSearchChanged(response){
+    this.mapOptions.center = [response.feature.geometry.x, response.feature.geometry.y];
+    var mercator  = webMercatorUtils.webMercatorToGeographic(event.mapPoint);
+    this.map.centerAt(mercator);
+  }
+  
   loadDonors(){
-    
-    var donors:Donor[];
+   
     this.donorService.getDonors().subscribe((response) => {
-      donors = response
+      this.donors = response
       var gl = new GraphicsLayer();
-      for(let donor of donors){
-       /* var infoSymbol:PictureMarkerSymbol = new PictureMarkerSymbol("http://hexe.er.usgs.gov/data/McHenry/images/bluedot.gif",30,30);
-        infoSymbol.setSize(40);
-        var infoTemplate:InfoTemplate = new InfoTemplate("${w}", "x: ${a}<br />y: ${b}<br />z: ${c}");
-        var marker:Graphic = new Graphic({"geometry":{"x":donor.latitude ,"y":donor.logitude, "spatialReference":{"wkid":102113}},
-            "attributes":{"w":"Donor","a":donor.email,"b":donor.contact}});
-        marker.setSymbol(infoSymbol);
-        marker.setInfoTemplate(infoTemplate);*/
-       
-        var p = new Point(donor.latitude?donor.latitude:0, donor.longitude?donor.logitude:0);
-        var s = new SimpleMarkerSymbol().setSize(60);
+      for(let donor of this.donors){
+        var p = new Point(donor.latitude, donor.longitude);
+        var s = new SimpleMarkerSymbol().setSize(30);
         var g = new Graphic(p, s);
         gl.add(g);
       }
       this.map.addLayer(gl);
     });
   }
-
-  // set map's basemap in response to user changes
-  onBasemapSelected(basemapName) {
-    this.mapComponent.setBasemap(basemapName);
-  }
   
+ 
   onSubmit(){
     var donor:Donor = <Donor>this.donorForm.value;
     donor.latitude = this.geometry.x;
     donor.longitude = this.geometry.y;
-    this.childModal.hide();
+    this.lgModal.hide();
     this.donorService.addDonor(donor);
     this.confirmModal.show();
   }

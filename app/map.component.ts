@@ -28,11 +28,6 @@ export class MapComponent {
     });
    }
 
-  setBasemap(basemapName) {
-    this._mapService.clearBasemap(this.map);
-    this.map.setBasemap(basemapName);
-  }
-
   // destroy map
   ngOnDestroy() {
     if (this.map) {
