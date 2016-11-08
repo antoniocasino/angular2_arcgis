@@ -5292,13 +5292,13 @@ define(["esri/arcgis/utils","esri/dijit/Search","esri/symbols/SimpleMarkerSymbol
 	                if (distance == 0) {
 	                    distance = d;
 	                }
-	                if (d < 0.5 && d <= distance) {
+	                if (d < 0.1 && d <= distance) {
 	                    point = p;
 	                    _this.donorForPatient = donor;
 	                    distance = d;
 	                }
 	            }
-	            if (distance < 0.5) {
+	            if (distance < 0.1) {
 	                _this.patientModal.show();
 	            }
 	            else {

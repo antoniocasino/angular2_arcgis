@@ -96,13 +96,13 @@ export class AppComponent {
         if(distance == 0){
           distance = d;
         }
-        if(d<0.5 && d <= distance){
+        if(d<0.1 && d <= distance){
           point = p;
           this.donorForPatient = donor;
           distance = d;
         }
       }
-      if(distance<0.5){
+      if(distance<0.1){
         this.patientModal.show();
       }
       else{
